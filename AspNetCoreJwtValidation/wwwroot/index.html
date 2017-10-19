@@ -1,0 +1,85 @@
+﻿<!DOCTYPE html>
+<html ng-app="myapp">
+<head>
+    <meta charset="utf-8" />
+    <title>Web API JWT Validation Sample</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.5/angular.js"></script>
+</head>
+<body style="margin: 2em;">
+
+    <div class="container" ng-controller="hoge">
+        <div class="row">
+            <h2>Web API JWT Validation Sample</h2>
+        </div>
+        <div class="row">
+            <h2>Login and get token</h2>
+            <div class="form-group">
+                <label>User</label>
+                <input type="text" class="form-control" id="user" ng-model="user" />
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" class="form-control" id="password" ng-model="password" />
+            </div>
+            <button type="submit" class="btn btn-primary" ng-click="click()">Login and Get Token</button>
+            <h3>Login stauts</h3>
+            <div ng-cloak>{{loginStatus}}</div>
+        </div>
+        <div class="row" style="margin-top: 2em;">
+            <h2>Invoke Web API</h2>
+            <button class="btn btn-success" ng-click="invokeApi('api/values/user')">Invoke User API</button>
+            <button class="btn btn-success" ng-click="invokeApi('api/values/admin')">Invoke Admin API</button>
+            <h3>Response</h3>
+            <div ng-cloak>{{message}}</div>
+        </div>
+    </div>
+    <script>
+        angular.module('myapp', [])
+            .controller('hoge',
+            [
+                '$scope', '$http', ($scope, $http) => {
+                    
+                    $scope.token = "";
+                    $scope.user = "user";
+                    $scope.password = "password";
+                    $scope.loginStatus = "Not Login";
+
+                    $scope.click = () => {
+                        $http({
+                            method: 'POST',
+                            url: 'api/login',
+                            headers: { 'Content-Type': 'application/json' },
+                            data: {
+                                id: $scope.user,
+                                password: $scope.password
+                            }
+                        }).then((response) => {
+                            $scope.token = response.data;
+                            $scope.loginStatus = "Loggedin.";
+                            console.log($scope.token);
+                        });
+                    }
+
+                    $scope.invokeApi = (url) => {
+                        let args = {
+                            method: 'GET',
+                            url: url
+                        }
+                        if ($scope.token) {
+                            args.headers = {};
+                            args.headers.Authorization = "Bearer " + $scope.token;
+                        }
+
+                        $http(args).then((response) => {
+                            $scope.message = response.data;
+                        }, (response) => {
+                            $scope.message = response.status + " : " + response.statusText;
+                        });
+                    };
+                }
+            ]);
+    </script>
+</body>
+</html>
